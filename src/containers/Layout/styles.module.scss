@@ -1,0 +1,75 @@
+@import '../../styles/settings/colors';
+@import '../../styles/settings/vars';
+@import '../../styles/mixins/responsive';
+
+.container {
+  display: flex;
+  flex: 1;
+  background-color: $color-grey;
+  min-height: 100vh;
+}
+
+.left {
+  position: relative;
+  z-index: 10;
+  min-width: $sidebar-width;
+
+  @include respond-to(md) {
+    min-width: 0;
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+.right {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: $color-grey;
+  position: relative;
+  overflow-x: auto;
+  height: 100%;
+  min-height: 100vh;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 9;
+  box-shadow: $shadow-1;
+  background-color: $color-light-grey;
+  padding-right: 10px;
+  height: 60px;
+
+  @include respond-to(md) {
+    height: 40px;
+
+    & > a:last-child {
+      height: 30px;
+    }
+  }
+}
+
+.button {
+  margin-right: 25px;
+  padding: 0 5px;
+
+  @include respond-to(md) {
+    height: 40px;
+  }
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+  background-color: $color-white;
+  flex-direction: column;
+}

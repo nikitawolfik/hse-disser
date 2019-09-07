@@ -1,0 +1,19 @@
+@import '../../styles/settings/colors';
+@import '../../styles/mixins/responsive';
+
+$border-radius-table-cell: 6px;
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  margin-top: 8px;
+  border-radius: $border-radius-table-cell;
+  border: 1px solid transparent;
+
+  @include respond-to(md) {
+    margin-top: 8px;
+  }
+}
+

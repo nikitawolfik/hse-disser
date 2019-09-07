@@ -1,0 +1,75 @@
+@import '../../styles/settings/colors';
+@import '../../styles/mixins/responsive';
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  background-color: $color-grey-darker;
+  box-shadow: $shadow-4;
+}
+
+.descriptionCard, .timeCard {
+  display: flex;
+  border: 1px solid $color-grey;
+  border-radius: 6px;
+  padding: 10px 20px;
+  width: 60%;
+  height: 80px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  text-align: center;
+
+  @include respond-to(md) {
+    width: 80%;
+  }
+}
+
+.title {
+  margin-top: 30px;
+  composes: title from '../../styles/typography.scss';
+}
+
+.descriptionCard {
+  min-height: 80px;
+  height: 100%;
+
+  @include respond-to(md) {
+    min-height: 150px;
+  }
+}
+
+.timeCard {
+
+}
+
+.card {
+  margin: 10px 0;
+}
+
+.cardActive {
+  background-color: $color-lightgreen;
+}
+
+.button {
+  margin-top: 20px;
+  width: 150px;
+}
+
+.progress {
+  height: 10px;
+  background-color: $color-red;
+  transition: all 0.3s;
+  animation: 0.3s;
+}
+
+.progressContainer {
+  width: 60%;
+  justify-content: center;
+  align-self: center;
+  border: 1px solid gray;
+}

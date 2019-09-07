@@ -1,0 +1,27 @@
+@import '../../styles/settings/colors';
+@import '../../styles/mixins/responsive';
+
+.cell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 104px;
+	min-height: 48px;
+	padding: 0;
+	text-align: center;
+	margin: 4px;
+	flex: 0;
+
+	@include respond-to(md) {
+		font-size: 14px;
+		margin: 4px 2px;
+	}
+
+	@include respond-to(sm) {
+		min-width: 92px;
+	}
+
+	@include respond-from(lg) {
+		flex: 1;
+	}
+}

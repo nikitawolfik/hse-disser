@@ -1,0 +1,90 @@
+@import '../../styles/settings/colors';
+@import '../../styles/mixins/responsive';
+
+$select-transition-time: 0.35s;
+
+.form {
+  margin-top: 16px;
+}
+
+.select {
+  width: 144px;
+  height: 40px;
+  border-radius: 5px;
+  background-color: $color-select;
+  padding: 10px 8px;
+  padding-right: 36px;
+  outline: none;
+  width: 176px;
+  font-size: 16px;
+  appearance: none;
+  border: none;
+  color: white;
+  transition: all $select-transition-time;
+}
+
+.managerSelected {
+  background-color: $color-purple;
+  color: white;
+  appearance: none;
+  transition: all $select-transition-time;
+}
+
+.option {
+  background-color: $color-select;
+  color: black;
+  border: none;
+}
+
+.selectDiv {
+  width: 200px;
+}
+
+.selectButton {
+  outline: none;
+  background-color: transparent;
+  border: none;
+  z-index: 2;
+  height: 24px;
+  position: absolute;
+  margin-left: -40px;
+  margin-top: 8px;
+  pointer-events: none;
+
+  @include respond-to(md) {
+    margin-left: -35px;
+  }
+}
+
+.selectButton :hover {
+  @include respond-from(md) {
+    background-color: #e2da27;
+    border-radius: 5px;
+  }
+}
+
+.selectImg {
+  filter: invert(1);
+  width: 24px;
+  height: 24px;
+}
+
+.selectButtonReset {
+  pointer-events: all;
+  height: 24px;
+  margin-left: -22px;
+  margin-top: 12px;
+  filter: invert(1);
+  cursor: pointer;
+
+  @include respond-to(md) {
+    margin-left: -30px;
+  }
+}
+
+.selectImgReset {
+  width: 24px;
+  height: 24px;
+  margin-top: -4px;
+  margin-left: -13px;
+}

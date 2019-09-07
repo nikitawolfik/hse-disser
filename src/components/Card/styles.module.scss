@@ -1,0 +1,27 @@
+@import '../../styles/settings/colors';
+@import '../../styles/mixins/responsive';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  background-color: #fff;
+  max-width: 420px;
+  min-width: 320px;
+  flex: 1;
+  justify-content: center;
+
+  @include respond-to(sm) {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 321px) {
+  .container {
+    min-width: 300px;
+  }
+}
+
+.shadow1 {
+  box-shadow: $shadow-1;
+}

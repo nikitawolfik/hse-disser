@@ -1,0 +1,11 @@
+@import '../../styles/settings/colors';
+
+.error {
+  padding-top: 8px;
+  display: block;
+  color: $color-red;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  line-height: 2;
+  font-weight: 600;
+}

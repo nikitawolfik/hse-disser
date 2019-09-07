@@ -1,0 +1,23 @@
+.loaderIcon {
+  animation: circle 3s infinite linear;
+  width: 16px;
+}
+
+.inverted {
+  filter: invert(1);
+}
+
+.large {
+  width: 32px;
+  height: 32px;
+}
+
+@keyframes circle {
+  0% {
+    transform: rotateZ(0deg);
+  }
+
+  100% {
+    transform: rotateZ(360deg);
+  }
+}

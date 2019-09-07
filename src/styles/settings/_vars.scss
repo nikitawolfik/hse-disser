@@ -1,0 +1,12 @@
+$sidebar-width-num: 56;
+
+$sidebar-width: 56px;
+
+$middlebar-width: 200px;
+
+$middlebar-width-num: 200;
+
+:export {
+  sidebarWidth: $sidebar-width-num;
+  middlebarWidth: $middlebar-width-num;
+}

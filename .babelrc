@@ -1,0 +1,12 @@
+{
+  "presets": ["react-app"],
+  "plugins": [
+    "@babel/plugin-proposal-optional-chaining",
+    [
+      "module-resolver",
+      {
+        "root": ["./src"]
+      }
+    ]
+  ]
+}

@@ -1,0 +1,15 @@
+.ReactModal__Content--after-open {
+  transform: translate3d(0%, 0, 0) !important;
+}
+
+.ReactModal__Content--before-close {
+  transform: scale(0.1) !important;
+}
+
+.ReactModal__Overlay--after-open {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.ReactModal__Overlay--before-close {
+  background-color: rgba(0, 0, 0, 0);
+}

@@ -1,0 +1,123 @@
+@import '../../styles/settings/colors';
+@import '../../styles/base';
+@import '../../styles/mixins/responsive';
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  height: 48px;
+  text-decoration: none;
+
+  @include respond-to(md) {
+    height: 48px;
+  }
+
+  &:hover {
+    opacity: .9;
+  }
+
+  &:active {
+    opacity: .7;
+  }
+}
+
+.text {
+  composes: content;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.white {
+  color: #fff;
+}
+
+.primary {
+  background-color: $color-blue;
+}
+
+.secondary {
+  box-shadow: $shadow-button-primary;
+  background-color: $color-purple;
+}
+
+.outline {
+  border: 1px solid $color-light-blue;
+  background-color: #fff;
+}
+
+.transparent {
+  padding: 6px 8px 4px 8px;
+  position: relative;
+  border-radius: 5px;
+  color: $color-black;
+
+  .leftExtraShadow {
+    visibility: hidden;
+  }
+
+  .rightExtraShadow {
+    visibility: hidden;
+  }
+
+  &:hover {
+    opacity: .9;
+  }
+
+  &:active {
+    opacity: .9;
+    background-color: $color-grey-darker;
+  }
+}
+
+.extraShadow {
+  position: absolute;
+  background-color: $color-grey-darker;
+  width: 5px;
+  height: 40px;
+}
+
+.leftExtraShadow {
+  composes: extraShadow;
+  left: -5px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.rightExtraShadow {
+  composes: extraShadow;
+  right: -5px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.medium {
+  width: 150px;
+}
+
+.big {
+  width: 210px;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.disabled {
+  opacity: .5;
+
+  &:hover {
+    opacity: .5;
+  }
+}
+
+.invertIcon {
+  transform: rotate(180deg);
+}
