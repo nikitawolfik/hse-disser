@@ -16,7 +16,7 @@ class Modal extends PureComponent {
   static propTypes = {
     submit: PropTypes.func,
     title: PropTypes.string,
-    renderTitle: PropTypes.node,
+    renderTitle: PropTypes.func,
     children: PropTypes.func,
     hideSubmitButton: PropTypes.bool,
     hideCloseButton: PropTypes.bool,
@@ -108,9 +108,7 @@ class Modal extends PureComponent {
                 <h3 className={styles.title}>{this.state.title || title}</h3>
               )}
 
-              {renderTitle && (
-                renderTitle
-              )}
+              {renderTitle && renderTitle()}
 
               {withContent && (
                 content

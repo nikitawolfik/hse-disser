@@ -3,6 +3,7 @@ import cx from 'classnames';
 
 import { Button, DocumentTitle, Card, Modal } from 'components';
 import { events, defaultState, tasks } from 'assets';
+import sortNumbers from 'utils/sortNumbers';
 
 import styles from './styles.module.scss';
 
@@ -17,6 +18,8 @@ const Game = () => {
   const [players, setPlayers] = useState([]);
   const [progress, setProgress] = useState({});
   const [currentPlayerIndex, setCurrentPlayer] = useState(null);
+  const [turn, setTurn] = useState(null);
+  const [factualValueDisplay, setFactualValue] = useState(null);
 
   let toggleModalOutside = () => {};
   let closeModalOutside = () => {};
@@ -32,9 +35,8 @@ const Game = () => {
   }
   const niceLitReview = parseInt(currentPlayerProgress?.grades[4], 10) >= 8
     && parseInt(currentPlayerProgress?.desiredGrade, 10) >= 8;
-  if (!niceLitReview) {
-    console.log(currentPlayerProgress?.grades);
-  }
+
+
   if (newTaskId === 7 && niceLitReview) {
     newTaskId += 1;
   }
@@ -53,9 +55,14 @@ const Game = () => {
   const setProgressIfNext = ({ hasGrade, grade, time }) => {
     const factualValue = !Number.isInteger(value) ? currentPlayerTime : value + currentPlayerTime;
     const bonusTime = factualValue - currentPlayerProgress.remainingTaskTime;
+
     const grades = currentPlayerProgress.desiredGrade
-      ? { ...currentPlayerProgress.grades, [currentPlayerProgress.currentTaskId]: currentPlayerProgress.desiredGrade }
+      ? {
+        ...currentPlayerProgress.grades,
+        [currentPlayerProgress.currentTaskId]: currentPlayerProgress.desiredGrade,
+      }
       : currentPlayerProgress.grades;
+
     const nextProgress = {
       ...currentPlayerProgress,
       hasBonus: value === 'database' ? true : currentPlayerProgress.hasBonus,
@@ -76,12 +83,12 @@ const Game = () => {
     });
   };
 
+  useEffect(() => {
+    console.log('players', players);
+  }, [players]);
+
   const handleProgress = () => {
     // logic here to handle progress as player changes
-    //  const currentPlayer = players[currentPlayerIndex];
-    //  const currentPlayerProgress = progress[currentPlayer];
-    //  const { value } = event;
-    //  const currentPlayerTime = time;
 
     if (value === 'skip') {
       // handle skip logic here
@@ -90,12 +97,16 @@ const Game = () => {
       return;
     }
 
-    const factualValue = !Number.isInteger(value) ? currentPlayerTime : value + currentPlayerTime;
+    const factualValue = !Number.isInteger(value)
+      ? currentPlayerTime + currentPlayerProgress.bonusTime
+      : value + currentPlayerTime + currentPlayerProgress.bonusTime;
+
+    setFactualValue(factualValue);
 
     if (factualValue >= currentPlayerProgress.remainingTaskTime) {
       // task finished
 
-      if (!Number.isInteger(newTask.time)) {
+      if (!newTask || !Number.isInteger(newTask.time)) {
         toggleModalOutside();
         return;
       }
@@ -109,8 +120,12 @@ const Game = () => {
         ...progress,
         [currentPlayer]: {
           ...currentPlayerProgress,
+          bonusTime: 0,
           hasBonus: value === 'database' ? true : currentPlayerProgress.hasBonus,
-          remainingTaskTime: currentPlayerProgress.remainingTaskTime - factualValue,
+          remainingTaskTime:
+            currentPlayerProgress.remainingTaskTime
+            - factualValue
+            - currentPlayerProgress.bonusTime,
           timeSpent:
             factualValue > 0
               ? currentPlayerProgress.timeSpent + factualValue
@@ -118,39 +133,40 @@ const Game = () => {
         },
       });
     }
-
-    //  console.log(currentPlayer, currentPlayerProgress.grades);
-    //  console.log(currentPlayerTime);
-    //  console.log(factualValue);
   };
 
   useEffect(() => {
     if (currentPlayerIndex === 0 || currentPlayerIndex) {
       handleProgress();
     }
-  }, [currentPlayerIndex]);
+  }, [turn]);
 
 
   const handleClick = () => {
     if (!gameStarted) {
       startGame(true);
     }
-    // logit to get event & hours and set player index
+
+    // logic to get event & hours and set player index
     const eventIndex = Math.floor(Math.random() * events.length);
     setEvent(events[eventIndex]);
+
     const hours = Math.floor(Math.random() * 8 + 1);
     setTime(hours);
+
     if (currentPlayerIndex === players.length - 1) {
       setLap(lap + 1);
       setCurrentPlayer(0);
+      setTurn(turn + 1);
     } else if (!currentPlayerIndex && currentPlayerIndex !== 0) {
       setCurrentPlayer(0);
+      setTurn(1);
     } else {
       setCurrentPlayer(currentPlayerIndex + 1);
+      setTurn(turn + 1);
     }
   };
 
-  //  console.log('PROGRESS', progress);
 
   return (
     <div className={styles.container}>
@@ -159,39 +175,80 @@ const Game = () => {
         closeOnOverlayClick={false}
         title={`${currentPlayer}, вы пропускаете этот ход.`}
         hideSubmitButton
-        onClose={handleClick}
+        //  onClose={handleClick}
       >
         {(toggleSkipModal) => {
           toggleSkipModalOutside = toggleSkipModal;
 
           return (
             <Modal
-              title={`${currentPlayer}, выберите оценку для следующего шага`}
-              hideSubmitButton
+              renderTitle={() => {
+                if (!newTask) {
+                  const { grades } = currentPlayerProgress;
+                  const gradesValues = Object.values(grades);
+                  const slicedGrades = gradesValues.slice(2);
+
+                  const calcAverage = array => array.reduce(
+                    (pv, cv) => pv + parseInt(cv, 10), 0,
+                  ) / array.length;
+
+                  const average = grades[7]
+                    ? calcAverage(slicedGrades)
+                    : calcAverage(gradesValues);
+
+                  return (
+                    <div>
+                      {`${currentPlayer}, вы успешно написали диссертацию!`}
+                      {`Ваш итоговый балл: ${average.toFixed(1)}`}
+                      {`Вы потратили ${currentPlayerProgress.timeSpent} часов на написание диссертации`}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div>
+                    {`${currentPlayer}, выберите оценку для следующего шага: ${newTask.description}`}
+                  </div>
+                );
+              }}
               hideCloseButton
+              hideSubmitButton={!!newTask}
+              submit={() => {
+                if (!newTask) {
+                  if (players.length === 1) {
+                    // alert results here
+                    startGame(false);
+                  } else {
+                    setPlayers(players.filter(player => player !== currentPlayer));
+                    handleClick();
+                  }
+                }
+              }}
               closeOnOverlayClick={false}
               withContent
-              content={(
-                <div>
-                  {Object.keys(newTask.time).map((grade) => {
-                    return (
-                      <Button
-                        key={grade}
-                        title={`${grade}: ${newTask.time[grade]} hours`}
-                        secondary
-                        onClick={() => {
-                          setProgressIfNext({
-                            hasGrade: true,
-                            grade,
-                            time: newTask.time[grade],
-                          });
-                          closeModalOutside();
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              )}
+              content={
+                newTask
+                  ? (
+                    <div>
+                      {Object.keys(newTask.time).sort(sortNumbers).map(grade => (
+                        <Button
+                          key={grade}
+                          title={`${grade}: ${newTask.time[grade]} hours`}
+                          secondary
+                          onClick={() => {
+                            setProgressIfNext({
+                              hasGrade: true,
+                              grade,
+                              time: newTask.time[grade],
+                            });
+                            closeModalOutside();
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )
+                  : null
+              }
             >
               {(toggleModal, closeModal) => {
                 toggleModalOutside = toggleModal;
@@ -222,26 +279,49 @@ const Game = () => {
                           desiredGrade,
                           overallTaskTime,
                           remainingTaskTime,
+                          timeSpent,
                         } = progress[player];
 
-                        const divProgress = (overallTaskTime - remainingTaskTime) / overallTaskTime * 100;
+                        let divProgress = (overallTaskTime - remainingTaskTime)
+                          / overallTaskTime
+                          * 100;
+
+                        if (remainingTaskTime < 0) {
+                          divProgress = 100;
+                        }
+
+                        const isActive = player === players[currentPlayerIndex];
 
                         return (
                           <Card
                             key={player}
                             className={cx(
                               styles.card,
-                              { [styles.cardActive]: player === players[currentPlayerIndex] },
+                              { [styles.cardActive]: isActive },
                             )}
                           >
                             <span>{player}</span>
+                            {progress[player]?.hasBonus && (
+                              <span>Bonus - skips #10</span>
+                            )}
                             <span>Current Task: {currentTask.description}</span>
                             <span>Current Task Id: {currentTaskId}</span>
                             {desiredGrade && (
                               <span>Grade: {desiredGrade}</span>
                             )}
+                            {isActive && (
+                              <span>Factual Value: {
+                                factualValueDisplay || factualValueDisplay === 0
+                                  ? factualValueDisplay
+                                  : "You haven't started yet"
+                              }
+                              </span>
+                            )}
                             <span>Time: {overallTaskTime}</span>
-                            <span>Time Remaining: {remainingTaskTime}</span>
+                            <span>
+                              {remainingTaskTime > 0 ? 'Time Remaining: ' : 'Bonus Time: '}
+                              {remainingTaskTime > 0 ? remainingTaskTime : -remainingTaskTime}
+                            </span>
                             <div className={styles.progressContainer}>
                               <div
                                 className={styles.progress}
@@ -257,6 +337,7 @@ const Game = () => {
                         );
                       })}
                     </div>
+
                     <Button
                       title={gameStarted ? 'Next Round' : 'Start Game'}
                       primary

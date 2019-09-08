@@ -10,4 +10,5 @@ export const defaultState = {
   grades: {},
   hasBonus: false,
   hasToSkip: false,
+  bonusTime: 0,
 };
