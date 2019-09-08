@@ -10,7 +10,7 @@ import styles from './styles.module.scss';
 const timePlaceholder = 'No time yet';
 const descriptionPLaceholder = 'No description yet';
 
-const Game = () => {
+const Game = ({ history: { push }}) => {
   const [gameStarted, startGame] = useState(localStorage.getItem('game'));
   const [event, setEvent] = useState(null);
   const [time, setTime] = useState(null);
@@ -20,6 +20,7 @@ const Game = () => {
   const [currentPlayerIndex, setCurrentPlayer] = useState(null);
   const [turn, setTurn] = useState(null);
   const [factualValueDisplay, setFactualValue] = useState(null);
+  const [results, setResults] = useState({});
 
   let toggleModalOutside = () => {};
   let closeModalOutside = () => {};
@@ -30,11 +31,16 @@ const Game = () => {
   const { value } = event || {};
   const currentPlayerTime = time;
   let newTaskId = currentPlayerProgress?.currentTaskId + 1 || 1;
-  if (newTaskId === 10 && currentPlayerProgress.hasBonus) {
+  if (newTaskId === 10 && currentPlayerProgress?.hasBonus) {
     newTaskId += 1;
   }
-  const niceLitReview = parseInt(currentPlayerProgress?.grades[4], 10) >= 8
-    && parseInt(currentPlayerProgress?.desiredGrade, 10) >= 8;
+
+  let niceLitReview = false;
+
+  if (currentPlayerProgress?.currentTaskId < 10) { // 10 is a random number
+    niceLitReview = parseInt(currentPlayerProgress?.grades[4], 10) >= 8
+      && parseInt(currentPlayerProgress?.desiredGrade, 10) >= 8;
+  }
 
 
   if (newTaskId === 7 && niceLitReview) {
@@ -54,23 +60,23 @@ const Game = () => {
 
   const setProgressIfNext = ({ hasGrade, grade, time }) => {
     const factualValue = !Number.isInteger(value) ? currentPlayerTime : value + currentPlayerTime;
-    const bonusTime = factualValue - currentPlayerProgress.remainingTaskTime;
+    const bonusTime = factualValue - currentPlayerProgress?.remainingTaskTime;
 
-    const grades = currentPlayerProgress.desiredGrade
+    const grades = currentPlayerProgress?.desiredGrade
       ? {
-        ...currentPlayerProgress.grades,
-        [currentPlayerProgress.currentTaskId]: currentPlayerProgress.desiredGrade,
+        ...currentPlayerProgress?.grades,
+        [currentPlayerProgress?.currentTaskId]: currentPlayerProgress?.desiredGrade,
       }
-      : currentPlayerProgress.grades;
+      : currentPlayerProgress?.grades;
 
     const nextProgress = {
       ...currentPlayerProgress,
-      hasBonus: value === 'database' ? true : currentPlayerProgress.hasBonus,
+      hasBonus: value === 'database' ? true : currentPlayerProgress?.hasBonus,
       currentTaskId: newTaskId,
       currentTask: newTask,
       overallTaskTime: hasGrade ? time : newTask.time,
       remainingTaskTime: hasGrade ? time - bonusTime : newTask.time - bonusTime,
-      timeSpent: currentPlayerProgress.timeSpent + factualValue,
+      timeSpent: currentPlayerProgress?.timeSpent + factualValue,
       desiredGrade: hasGrade ? grade : null,
       grades: {
         ...grades,
@@ -83,9 +89,6 @@ const Game = () => {
     });
   };
 
-  useEffect(() => {
-    console.log('players', players);
-  }, [players]);
 
   const handleProgress = () => {
     // logic here to handle progress as player changes
@@ -98,12 +101,12 @@ const Game = () => {
     }
 
     const factualValue = !Number.isInteger(value)
-      ? currentPlayerTime + currentPlayerProgress.bonusTime
-      : value + currentPlayerTime + currentPlayerProgress.bonusTime;
+      ? currentPlayerTime + currentPlayerProgress?.bonusTime
+      : value + currentPlayerTime + currentPlayerProgress?.bonusTime;
 
     setFactualValue(factualValue);
 
-    if (factualValue >= currentPlayerProgress.remainingTaskTime) {
+    if (factualValue >= currentPlayerProgress?.remainingTaskTime) {
       // task finished
 
       if (!newTask || !Number.isInteger(newTask.time)) {
@@ -121,15 +124,15 @@ const Game = () => {
         [currentPlayer]: {
           ...currentPlayerProgress,
           bonusTime: 0,
-          hasBonus: value === 'database' ? true : currentPlayerProgress.hasBonus,
+          hasBonus: value === 'database' ? true : currentPlayerProgress?.hasBonus,
           remainingTaskTime:
-            currentPlayerProgress.remainingTaskTime
+            currentPlayerProgress?.remainingTaskTime
             - factualValue
-            - currentPlayerProgress.bonusTime,
+            - currentPlayerProgress?.bonusTime,
           timeSpent:
             factualValue > 0
-              ? currentPlayerProgress.timeSpent + factualValue
-              : currentPlayerProgress.timeSpent,
+              ? currentPlayerProgress?.timeSpent + factualValue
+              : currentPlayerProgress?.timeSpent,
         },
       });
     }
@@ -144,6 +147,9 @@ const Game = () => {
 
   const handleClick = () => {
     if (!gameStarted) {
+      if (Object.keys(results).length) {
+        push('/');
+      }
       startGame(true);
     }
 
@@ -200,7 +206,7 @@ const Game = () => {
                     <div>
                       {`${currentPlayer}, вы успешно написали диссертацию!`}
                       {`Ваш итоговый балл: ${average.toFixed(1)}`}
-                      {`Вы потратили ${currentPlayerProgress.timeSpent} часов на написание диссертации`}
+                      {`Вы потратили ${currentPlayerProgress?.timeSpent} часов на написание диссертации`}
                     </div>
                   );
                 }
@@ -215,8 +221,30 @@ const Game = () => {
               hideSubmitButton={!!newTask}
               submit={() => {
                 if (!newTask) {
+                  const { grades } = currentPlayerProgress;
+                  const gradesValues = Object.values(grades);
+                  const slicedGrades = gradesValues.slice(2);
+
+                  const calcAverage = array => array.reduce(
+                    (pv, cv) => pv + parseInt(cv, 10), 0,
+                  ) / array.length;
+
+                  const average = grades[7]
+                    ? calcAverage(slicedGrades)
+                    : calcAverage(gradesValues);
+
+                  setResults({
+                    ...results,
+                    [currentPlayer]: {
+                      name: currentPlayer,
+                      timeSpent: currentPlayerProgress?.timeSpent,
+                      grade: average.toFixed(1),
+                    },
+                  });
+
                   if (players.length === 1) {
                     // alert results here
+                    setPlayers([]);
                     startGame(false);
                   } else {
                     setPlayers(players.filter(player => player !== currentPlayer));
@@ -257,20 +285,21 @@ const Game = () => {
                 return (
                   <>
                     <span className={styles.title}>
-                      Круг - {lap}
+                      {gameStarted ? `Круг: ${lap}` : ''}
                     </span>
                     <span className={styles.title}>
                       Случайное событие
                     </span>
                     <div className={styles.descriptionCard}>
-                      {event?.description || descriptionPLaceholder}
+                      {gameStarted ? `${event?.description || descriptionPLaceholder}` : ''}
                     </div>
                     <span className={styles.title}>
                       Количество фактических часов
                     </span>
                     <div className={styles.timeCard}>
-                      {time || timePlaceholder}
+                      {gameStarted ? `${time || timePlaceholder}` : ''}
                     </div>
+
                     <div>
                       {players.map((player) => {
                         const {
@@ -337,6 +366,26 @@ const Game = () => {
                         );
                       })}
                     </div>
+
+                    {!players.length && Object.keys(results).length && (
+                      <div>
+                        {Object.keys(results).map((playerName) => {
+                          const {
+                            name,
+                            timeSpent,
+                            grade,
+                          } = results[playerName];
+
+                          return (
+                            <Card key={name}>
+                              <span>Name: {name}</span>
+                              <span>Time: {timeSpent}</span>
+                              <span>Grade: {grade}</span>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     <Button
                       title={gameStarted ? 'Next Round' : 'Start Game'}

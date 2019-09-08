@@ -13,7 +13,11 @@ const Initialize = ({ startGame, history }) => {
 
   // to be removed
   useEffect(() => {
-    localStorage.setItem('players', JSON.stringify({ player1: 'nikita', player2: 'ne nikita' }));
+    localStorage.setItem('players', JSON.stringify({
+      player1: 'nikita',
+      player2: 'ne nikita',
+      //  player3: 'player 3',
+    }));
     startGame(true);
     history.push('/game');
   }, []);
