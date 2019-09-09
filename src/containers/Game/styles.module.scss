@@ -1,6 +1,8 @@
 @import '../../styles/settings/colors';
 @import '../../styles/mixins/responsive';
 
+$animation-time: 350ms;
+
 .container {
   display: flex;
   align-items: center;
@@ -12,12 +14,39 @@
   box-shadow: $shadow-4;
 }
 
+.gameEvents {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.laps {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.eventsCardsContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.cardContainer {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  align-items: center;
+}
+
 .descriptionCard, .timeCard {
   display: flex;
   border: 1px solid $color-grey;
   border-radius: 6px;
   padding: 10px 20px;
-  width: 60%;
+  width: 95%;
   height: 80px;
   align-items: center;
   justify-content: center;
@@ -30,8 +59,17 @@
 }
 
 .title {
-  margin-top: 30px;
-  composes: title from '../../styles/typography.scss';
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+}
+
+.buttonMenu {
+  position: absolute;
+  right: 12px;
+  top: 4px;
+  width: 48px;
+  height: 48px;
 }
 
 .descriptionCard {
@@ -47,8 +85,39 @@
 
 }
 
+.cardsContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  width: 100%;
+}
+
 .card {
   margin: 10px 0;
+  align-items: center;
+  width: calc((100% - 150px)/2);
+  min-width: calc((100% - 150px)/2);
+  max-width: 500px;
+  margin-left: 30px;
+  margin-right: 30px;
+  min-height: 220px;
+}
+
+.cardName {
+  font-size: 20px;
+  letter-spacing: 1px;
+  margin: 6px 0px;
+}
+
+.cardTask {
+  text-align: center;
+  margin: 12px 0px;
+}
+
+.cardTaskTime {
+  align-self: baseline;
+  margin-left: 6px;
 }
 
 .cardActive {
@@ -56,8 +125,13 @@
 }
 
 .button {
-  margin-top: 20px;
+  //  margin-top: 20px;
   width: 150px;
+}
+
+.hoursButton {
+  width: 100%;
+  margin: 4px;
 }
 
 .progress {
@@ -67,9 +141,64 @@
   animation: 0.3s;
 }
 
-.progressContainer {
+.progressContainer, .progressContainerTask {
   width: 60%;
   justify-content: center;
   align-self: center;
   border: 1px solid gray;
 }
+
+.progressContainerTask {
+  margin: 12px 0px;
+}
+
+.resultCard {
+  margin: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  min-width: unset;
+  width: 200px;
+
+  span {
+    margin: 6px;
+  }
+}
+
+.resultContainer {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  display: flex;
+  width: 100%;
+  margin: 0 20%;
+}
+
+
+.entering {
+  transition: all ease-in-out $animation-time;
+  animation: setMenuOpened $animation-time ease-in-out;
+}
+
+.exiting {
+  transition: all ease-in-out $animation-time;
+  animation: closeMenu $animation-time ease-in-out;
+}
+
+@keyframes setMenuOpened {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes closeMenu {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+

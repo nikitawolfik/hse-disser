@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
+import Transition from 'react-transition-group/Transition';
 
-import { Button, DocumentTitle, Card, Modal } from 'components';
+import { TaskList } from 'containers';
+import { Button, DocumentTitle, Card, Modal, Backdrop } from 'components';
 import { events, defaultState, tasks } from 'assets';
 import sortNumbers from 'utils/sortNumbers';
+import MenuIcon from 'assets/svg/menu.svg';
 
 import styles from './styles.module.scss';
 
@@ -22,11 +25,14 @@ const Game = ({ history: { push }}) => {
   const [factualValueDisplay, setFactualValue] = useState(null);
   const [results, setResults] = useState({});
 
+  const [showTaskList, setShowTaskList] = useState(false);
+
   let toggleModalOutside = () => {};
   let closeModalOutside = () => {};
   let toggleSkipModalOutside = () => {};
 
   const currentPlayer = players[currentPlayerIndex];
+  console.log('player', currentPlayer);
   const currentPlayerProgress = progress[currentPlayer];
   const { value } = event || {};
   const currentPlayerTime = time;
@@ -82,11 +88,12 @@ const Game = ({ history: { push }}) => {
         ...grades,
       },
     };
-
-    setProgress({
-      ...progress,
-      [currentPlayer]: nextProgress,
-    });
+    if (currentPlayer) {
+      setProgress({
+        ...progress,
+        [currentPlayer]: nextProgress,
+      });
+    }
   };
 
 
@@ -96,8 +103,10 @@ const Game = ({ history: { push }}) => {
     if (value === 'skip') {
       // handle skip logic here
       // and return to finish function
-      toggleSkipModalOutside();
-      return;
+
+      // uncomment this
+      //  toggleSkipModalOutside();
+      //  return;
     }
 
     const factualValue = !Number.isInteger(value)
@@ -119,22 +128,32 @@ const Game = ({ history: { push }}) => {
       });
     } else {
       //  task not finished
-      setProgress({
-        ...progress,
-        [currentPlayer]: {
-          ...currentPlayerProgress,
-          bonusTime: 0,
-          hasBonus: value === 'database' ? true : currentPlayerProgress?.hasBonus,
-          remainingTaskTime:
-            currentPlayerProgress?.remainingTaskTime
-            - factualValue
-            - currentPlayerProgress?.bonusTime,
-          timeSpent:
-            factualValue > 0
-              ? currentPlayerProgress?.timeSpent + factualValue
-              : currentPlayerProgress?.timeSpent,
-        },
-      });
+      if (currentPlayerProgress?.remainingTaskTime
+        - factualValue
+        - currentPlayerProgress?.bonusTime === 0 && currentPlayerProgress.currentTaskId === 18) {
+        setProgressIfNext({
+          hasGrade: false,
+        });
+        return;
+      }
+      if (currentPlayer) {
+        setProgress({
+          ...progress,
+          [currentPlayer]: {
+            ...currentPlayerProgress,
+            bonusTime: 0,
+            hasBonus: value === 'database' ? true : currentPlayerProgress?.hasBonus,
+            remainingTaskTime:
+              currentPlayerProgress?.remainingTaskTime
+              - factualValue
+              - currentPlayerProgress?.bonusTime,
+            timeSpent:
+              factualValue > 0
+                ? currentPlayerProgress?.timeSpent + factualValue
+                : currentPlayerProgress?.timeSpent,
+          },
+        });
+      }
     }
   };
 
@@ -167,16 +186,61 @@ const Game = ({ history: { push }}) => {
     } else if (!currentPlayerIndex && currentPlayerIndex !== 0) {
       setCurrentPlayer(0);
       setTurn(1);
+    } else if (players.length === 1) {
+      setCurrentPlayer(0);
+      setTurn(turn + 1);
+      setLap(lap + 1);
     } else {
       setCurrentPlayer(currentPlayerIndex + 1);
       setTurn(turn + 1);
     }
   };
 
+  //  useEffect(() => {
+  //    setPlayers([]);
+  //    setResults({
+  //      nikita: {
+  //        name: 'nikita',
+  //        timeSpent: 10,
+  //        grade: 10,
+  //      },
+  //      nikita2: {
+  //        name: 'nikita',
+  //        timeSpent: 10,
+  //        grade: 10,
+  //      },
+  //    });
+  //  }, []);
+
 
   return (
     <div className={styles.container}>
       <DocumentTitle>Написание диссертации</DocumentTitle>
+      {showTaskList && (
+        <Backdrop width="100%" onClick={() => setShowTaskList(false)} />
+      )}
+      <Transition
+        in={showTaskList}
+        timeout={350}
+        unmountOnExit
+        mountOnEnter
+        enter
+      >
+        {(menuAnimation) => {
+          return (
+            <TaskList
+              currentPlayerProgress={currentPlayerProgress}
+              close={() => setShowTaskList(false)}
+              className={cx(
+                {
+                  [styles.entering]: menuAnimation === 'entering',
+                  [styles.exiting]: menuAnimation === 'exiting',
+                },
+              )}
+            />
+          );
+        }}
+      </Transition>
       <Modal
         closeOnOverlayClick={false}
         title={`${currentPlayer}, вы пропускаете этот ход.`}
@@ -213,7 +277,9 @@ const Game = ({ history: { push }}) => {
 
                 return (
                   <div>
-                    {`${currentPlayer}, выберите оценку для следующего шага: ${newTask.description}`}
+                    <strong>{currentPlayer}</strong>
+                    <span>, выберите оценку для следующего шага: </span>
+                    <p>{newTask.description}</p>
                   </div>
                 );
               }}
@@ -261,8 +327,8 @@ const Game = ({ history: { push }}) => {
                       {Object.keys(newTask.time).sort(sortNumbers).map(grade => (
                         <Button
                           key={grade}
-                          title={`${grade}: ${newTask.time[grade]} hours`}
-                          secondary
+                          title={`${grade}: ${newTask.time[grade]} часов`}
+                          className={styles.hoursButton}
                           onClick={() => {
                             setProgressIfNext({
                               hasGrade: true,
@@ -284,23 +350,53 @@ const Game = ({ history: { push }}) => {
 
                 return (
                   <>
-                    <span className={styles.title}>
-                      {gameStarted ? `Круг: ${lap}` : ''}
-                    </span>
-                    <span className={styles.title}>
-                      Случайное событие
-                    </span>
-                    <div className={styles.descriptionCard}>
-                      {gameStarted ? `${event?.description || descriptionPLaceholder}` : ''}
+                    <div className={styles.gameEvents}>
+                      <div className={styles.laps}>
+                        <span className={styles.title}>
+                          {gameStarted ? `Круг: ${lap}` : 'Игра еще не началась'}
+                        </span>
+                        <Button
+                          withIcon
+                          icon={MenuIcon}
+                          className={styles.buttonMenu}
+                          onClick={() => setShowTaskList(!showTaskList)}
+                        />
+                      </div>
+                      <div className={styles.eventsCardsContainer}>
+                        <div className={styles.cardContainer}>
+                          <span className={styles.title}>
+                            Случайное событие
+                          </span>
+                          <div className={styles.descriptionCard}>
+                            {gameStarted ? `${event?.description || descriptionPLaceholder}` : ''}
+                          </div>
+                        </div>
+                        <div className={styles.cardContainer}>
+                          <span className={styles.title}>
+                            Количество фактических часов
+                          </span>
+                          <div className={styles.timeCard}>
+                            {gameStarted ? `${time || timePlaceholder}` : ''}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <span className={styles.title}>
-                      Количество фактических часов
-                    </span>
-                    <div className={styles.timeCard}>
-                      {gameStarted ? `${time || timePlaceholder}` : ''}
-                    </div>
+                    {/*<div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        width: '80%',
+                        overflow: 'scroll',
+                      }}
+                    >
+                      STATE
+                      <pre><b>Players: </b>{JSON.stringify(players, null, 2)}</pre>
+                      <pre><b>Progress: </b>{JSON.stringify(progress, null, 2)}</pre>
+                      <pre>{currentPlayerIndex}{JSON.stringify(currentPlayer, null, 2)}</pre>
+                      <pre><b>CurrentPlayerProgress: </b>{JSON.stringify(currentPlayerProgress, null, 2)}</pre>
+                    </div>*/}
 
-                    <div>
+                    <div className={styles.cardsContainer}>
                       {players.map((player) => {
                         const {
                           currentTask,
@@ -310,6 +406,8 @@ const Game = ({ history: { push }}) => {
                           remainingTaskTime,
                           timeSpent,
                         } = progress[player];
+
+                        const taskProgress = currentTaskId / 18 * 100;
 
                         let divProgress = (overallTaskTime - remainingTaskTime)
                           / overallTaskTime
@@ -329,29 +427,23 @@ const Game = ({ history: { push }}) => {
                               { [styles.cardActive]: isActive },
                             )}
                           >
-                            <span>{player}</span>
-                            {progress[player]?.hasBonus && (
-                              <span>Bonus - skips #10</span>
-                            )}
-                            <span>Current Task: {currentTask.description}</span>
-                            <span>Current Task Id: {currentTaskId}</span>
-                            {desiredGrade && (
-                              <span>Grade: {desiredGrade}</span>
-                            )}
-                            {isActive && (
-                              <span>Factual Value: {
-                                factualValueDisplay || factualValueDisplay === 0
-                                  ? factualValueDisplay
-                                  : "You haven't started yet"
-                              }
-                              </span>
-                            )}
-                            <span>Time: {overallTaskTime}</span>
-                            <span>
-                              {remainingTaskTime > 0 ? 'Time Remaining: ' : 'Bonus Time: '}
-                              {remainingTaskTime > 0 ? remainingTaskTime : -remainingTaskTime}
-                            </span>
+                            <span className={styles.cardName}>{player}</span>
                             <div className={styles.progressContainer}>
+                              <div
+                                className={styles.progress}
+                                style={{ width: `${taskProgress}%` }}
+                              />
+                            </div>
+                            <span className={styles.cardTask}>#{currentTask.title}: {currentTask.description}</span>
+                            <span className={styles.cardTaskTime}>Время для выполнения задания: {overallTaskTime}</span>
+                            {desiredGrade && (
+                              <span className={styles.cardTaskTime}>Оценка: {desiredGrade}</span>
+                            )}
+                            <span className={styles.cardTaskTime}>
+                              {remainingTaskTime > 0 ? 'Выполненное время: ' : 'Бонусное время: '}
+                              {remainingTaskTime > 0 ? overallTaskTime - remainingTaskTime : -remainingTaskTime}
+                            </span>
+                            <div className={styles.progressContainerTask}>
                               <div
                                 className={styles.progress}
                                 style={
@@ -362,13 +454,28 @@ const Game = ({ history: { push }}) => {
                               />
                             </div>
 
+                            {progress[player]?.hasBonus && (
+                              <span className={styles.cardTaskTime}>
+                                Бонус: Игрок пропускает шаг №7, у него уже есть база данных.
+                              </span>
+                            )}
+
+                            {/*isActive && (
+                              <span>Factual Value: {
+                                factualValueDisplay || factualValueDisplay === 0
+                                  ? factualValueDisplay
+                                  : "You haven't started yet"
+                              }
+                              </span>
+                            )*/}
+
                           </Card>
                         );
                       })}
                     </div>
 
                     {!players.length && Object.keys(results).length && (
-                      <div>
+                      <div className={styles.resultContainer}>
                         {Object.keys(results).map((playerName) => {
                           const {
                             name,
@@ -377,7 +484,7 @@ const Game = ({ history: { push }}) => {
                           } = results[playerName];
 
                           return (
-                            <Card key={name}>
+                            <Card key={name} className={styles.resultCard}>
                               <span>Name: {name}</span>
                               <span>Time: {timeSpent}</span>
                               <span>Grade: {grade}</span>

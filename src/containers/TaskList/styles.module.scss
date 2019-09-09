@@ -1,0 +1,62 @@
+@import '../../styles/settings/colors';
+
+.container {
+  left: 0;
+  position: fixed;
+  flex-direction: column;
+  background-color: $color-pale-grey;
+  z-index: 10;
+  width: 70%;
+  overflow: scroll;
+  top: 0;
+  bottom: 0;
+  outline: none;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.button {
+  width: 48px;
+}
+
+.task {
+  display: flex;
+  flex-direction: column;
+  min-height: 50px;
+  justify-content: center;
+  padding-left: 6px;
+  margin-left: 12px;
+  border-radius: 8px;
+  width: 95%;
+  margin: 6px;
+}
+
+.grades, .description {
+  width: 80%;
+}
+
+.grades {
+  padding: 0 24px;
+  margin: 12px 0;
+
+  p {
+    margin: 6px 0;
+  }
+}
+
+.description {
+}
+
+.activeTask {
+  background-color: $color-grey-link;
+  border: 1px solid $color-yellow;
+}
+
+.activeGrade {
+  font-weight: bold;
+}
