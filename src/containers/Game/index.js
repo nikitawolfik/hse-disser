@@ -32,7 +32,6 @@ const Game = ({ history: { push }}) => {
   let toggleSkipModalOutside = () => {};
 
   const currentPlayer = players[currentPlayerIndex];
-  console.log('player', currentPlayer);
   const currentPlayerProgress = progress[currentPlayer];
   const { value } = event || {};
   const currentPlayerTime = time;
@@ -104,9 +103,8 @@ const Game = ({ history: { push }}) => {
       // handle skip logic here
       // and return to finish function
 
-      // uncomment this
-      //  toggleSkipModalOutside();
-      //  return;
+      toggleSkipModalOutside();
+      return;
     }
 
     const factualValue = !Number.isInteger(value)
