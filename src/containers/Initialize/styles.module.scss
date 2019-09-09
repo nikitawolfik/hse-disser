@@ -1,3 +1,43 @@
+@import '../../styles/settings/colors';
+
 .container {
   display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 20px 40px;
+  align-items: center;
+  width: 100%;
+  max-width: unset;
+  height: unset;
 };
+
+.title {
+  font-size: 22px;
+}
+
+.left, .right {
+  width: 40%;
+  display: flex;  
+  flex-direction: column;
+}
+
+.left {
+  margin-bottom: 24px;
+}
+
+.select {
+  width: 100%;
+  background-color: $color-pale-grey;
+}
+
+.buttonQuantity {
+  display: flex;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.input {
+  &:focus {
+    border: 1px solid $color-yellow
+  }
+}
