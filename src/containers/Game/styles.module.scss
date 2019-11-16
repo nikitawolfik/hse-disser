@@ -32,6 +32,14 @@ $animation-time: 350ms;
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
+
+  @include respond-to(md) {
+    flex-direction: column;
+
+    .cardContainer {
+      width: 100%;
+    }
+  }
 }
 
 .cardContainer {
@@ -102,6 +110,12 @@ $animation-time: 350ms;
   margin-left: 30px;
   margin-right: 30px;
   min-height: 220px;
+
+  @include respond-to(md) {
+    width: calc(100% - 40px);
+    position: absolute;
+    margin: 10px 0px;
+  }
 }
 
 .cardName {
@@ -127,6 +141,11 @@ $animation-time: 350ms;
 .button {
   //  margin-top: 20px;
   width: 150px;
+
+  @include respond-to(md) {
+    position: absolute;
+    bottom: 10px;
+  }
 }
 
 .hoursButton {
@@ -199,6 +218,35 @@ $animation-time: 350ms;
   }
   to {
     transform: translateX(-100%);
+  }
+}
+
+
+.cardEntering {
+  transition: all ease-in-out $animation-time;
+  animation: showCard $animation-time ease-in-out;
+}
+
+.cardExiting {
+  transition: all ease-in-out $animation-time;
+  animation: hideCard $animation-time ease-in-out;
+}
+
+@keyframes showCard {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes hideCard {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(100%);
   }
 }
 

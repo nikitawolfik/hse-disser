@@ -30,6 +30,7 @@ class Modal extends PureComponent {
     closeClassName: PropTypes.string,
     cardClassName: PropTypes.string,
     closeOnOverlayClick: PropTypes.bool,
+    closeOnEsc: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -37,6 +38,7 @@ class Modal extends PureComponent {
     closeButtonText: 'Закрыть',
     withContent: false,
     closeOnOverlayClick: true,
+    closeOnEsc: true,
   }
 
   state = {
@@ -86,6 +88,7 @@ class Modal extends PureComponent {
       disableSubmit,
       submitClassName,
       closeOnOverlayClick,
+      closeOnEsc,
     } = this.props;
 
     return (
@@ -99,6 +102,7 @@ class Modal extends PureComponent {
           className={styles.container}
           onRequestClose={this.closeModal}
           shouldCloseOnOverlayClick={closeOnOverlayClick}
+          shouldCloseOnEsc={closeOnEsc}
         >
           <Card
             className={cx(cardClassName, styles.card)}

@@ -3,7 +3,7 @@ import cx from 'classnames';
 import Transition from 'react-transition-group/Transition';
 
 import { TaskList } from 'containers';
-import { Button, DocumentTitle, Card, Modal, Backdrop } from 'components';
+import { Button, DocumentTitle, Card, Modal, Backdrop, WindowResizer } from 'components';
 import { events, defaultState, tasks } from 'assets';
 import sortNumbers from 'utils/sortNumbers';
 import MenuIcon from 'assets/svg/menu.svg';
@@ -13,7 +13,7 @@ import styles from './styles.module.scss';
 const timePlaceholder = 'No time yet';
 const descriptionPLaceholder = 'No description yet';
 
-const Game = ({ history: { push }}) => {
+const Game = ({ history: { push } }) => {
   const [gameStarted, startGame] = useState(localStorage.getItem('game'));
   const [event, setEvent] = useState(null);
   const [time, setTime] = useState(null);
@@ -224,20 +224,18 @@ const Game = ({ history: { push }}) => {
         mountOnEnter
         enter
       >
-        {(menuAnimation) => {
-          return (
-            <TaskList
-              currentPlayerProgress={currentPlayerProgress}
-              close={() => setShowTaskList(false)}
-              className={cx(
-                {
-                  [styles.entering]: menuAnimation === 'entering',
-                  [styles.exiting]: menuAnimation === 'exiting',
-                },
-              )}
-            />
-          );
-        }}
+        {menuAnimation => (
+          <TaskList
+            currentPlayerProgress={currentPlayerProgress}
+            close={() => setShowTaskList(false)}
+            className={cx(
+              {
+                [styles.entering]: menuAnimation === 'entering',
+                [styles.exiting]: menuAnimation === 'exiting',
+              },
+            )}
+          />
+        )}
       </Transition>
       <Modal
         closeOnOverlayClick={false}
@@ -250,6 +248,7 @@ const Game = ({ history: { push }}) => {
 
           return (
             <Modal
+              closeOnEsc={false}
               renderTitle={() => {
                 if (!newTask) {
                   const { grades } = currentPlayerProgress;
@@ -379,20 +378,6 @@ const Game = ({ history: { push }}) => {
                         </div>
                       </div>
                     </div>
-                    {/*<div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        width: '80%',
-                        overflow: 'scroll',
-                      }}
-                    >
-                      STATE
-                      <pre><b>Players: </b>{JSON.stringify(players, null, 2)}</pre>
-                      <pre><b>Progress: </b>{JSON.stringify(progress, null, 2)}</pre>
-                      <pre>{currentPlayerIndex}{JSON.stringify(currentPlayer, null, 2)}</pre>
-                      <pre><b>CurrentPlayerProgress: </b>{JSON.stringify(currentPlayerProgress, null, 2)}</pre>
-                    </div>*/}
 
                     <div className={styles.cardsContainer}>
                       {players.map((player) => {
@@ -418,56 +403,68 @@ const Game = ({ history: { push }}) => {
                         const isActive = player === players[currentPlayerIndex];
 
                         return (
-                          <Card
-                            key={player}
-                            className={cx(
-                              styles.card,
-                              { [styles.cardActive]: isActive },
-                            )}
-                          >
-                            <span className={styles.cardName}>{player}</span>
-                            <div className={styles.progressContainer}>
-                              <div
-                                className={styles.progress}
-                                style={{ width: `${taskProgress}%` }}
-                              />
-                            </div>
-                            <span className={styles.cardTask}>#{currentTask.title}: {currentTask.description}</span>
-                            <span className={styles.cardTaskTime}>Время для выполнения задания: {overallTaskTime}</span>
-                            {desiredGrade && (
-                              <span className={styles.cardTaskTime}>Оценка: {desiredGrade}</span>
-                            )}
-                            <span className={styles.cardTaskTime}>
-                              {remainingTaskTime > 0 ? 'Выполненное время: ' : 'Бонусное время: '}
-                              {remainingTaskTime > 0 ? overallTaskTime - remainingTaskTime : -remainingTaskTime}
-                            </span>
-                            <div className={styles.progressContainerTask}>
-                              <div
-                                className={styles.progress}
-                                style={
-                                  divProgress > 0
-                                    ? { width: `${divProgress}%` }
-                                    : { width: '0%' }
-                                }
-                              />
-                            </div>
+                          <WindowResizer>
+                            {(width) => {
+                              const isMobile = width <= 767;
 
-                            {progress[player]?.hasBonus && (
-                              <span className={styles.cardTaskTime}>
-                                Бонус: Игрок пропускает шаг №7, у него уже есть база данных.
-                              </span>
-                            )}
-
-                            {/*isActive && (
-                              <span>Factual Value: {
-                                factualValueDisplay || factualValueDisplay === 0
-                                  ? factualValueDisplay
-                                  : "You haven't started yet"
-                              }
-                              </span>
-                            )*/}
-
-                          </Card>
+                              return (
+                                <Transition
+                                  in={!isMobile || isActive}
+                                  timeout={350}
+                                  unmountOnExit
+                                  mountOnEnter
+                                  enter
+                                >
+                                  {cardAnimation => (
+                                    <Card
+                                      key={player}
+                                      className={cx(
+                                        styles.card,
+                                        {
+                                          [styles.cardActive]: isActive,
+                                          [styles.cardEntering]: cardAnimation === 'entering',
+                                          [styles.cardExiting]: cardAnimation === 'exiting',
+                                        },
+                                      )}
+                                    >
+                                      <span className={styles.cardName}>{player}</span>
+                                      <div className={styles.progressContainer}>
+                                        <div
+                                          className={styles.progress}
+                                          style={{ width: `${taskProgress}%` }}
+                                        />
+                                      </div>
+                                      <span className={styles.cardTask}>#{currentTask.title}: {currentTask.description}</span>
+                                      <span className={styles.cardTaskTime}>Время для выполнения задания: {overallTaskTime}</span>
+                                      {desiredGrade && (
+                                        <span className={styles.cardTaskTime}>Оценка: {desiredGrade}</span>
+                                      )}
+                                      <span className={styles.cardTaskTime}>
+                                        {remainingTaskTime > 0 ? 'Выполненное время: ' : 'Бонусное время: '}
+                                        {remainingTaskTime > 0 ? overallTaskTime - remainingTaskTime : -remainingTaskTime}
+                                      </span>
+                                      <div className={styles.progressContainerTask}>
+                                        <div
+                                          className={styles.progress}
+                                          style={
+                                            divProgress > 0
+                                              ? { width: `${divProgress}%` }
+                                              : { width: '0%' }
+                                          }
+                                        />
+                                      </div>
+  
+                                      {progress[player]?.hasBonus && (
+                                        <span className={styles.cardTaskTime}>
+                                          Бонус: Игрок пропускает шаг №7, у него уже есть база данных.
+                                        </span>
+                                      )}
+                                    </Card>
+                                  )}
+                                </Transition>
+                              );
+                            }}
+                          </WindowResizer>
                         );
                       })}
                     </div>

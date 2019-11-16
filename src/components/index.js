@@ -11,3 +11,4 @@ export { default as TableCell } from './TableCell';
 export { default as TableRow } from './TableRow';
 export { default as Select } from './Select';
 export { default as Backdrop } from './Backdrop';
+export { default as WindowResizer } from './WindowResizer';
