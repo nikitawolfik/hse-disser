@@ -13,16 +13,16 @@ const Initialize = ({ startGame, history }) => {
   const [number, setNumber] = useState(null);
 
   // to be removed
-  useEffect(() => {
-    localStorage.setItem('players', JSON.stringify({
-      player1: 'nikita',
-      player2: 'ne nikita',
-      player3: 'player 3',
-      player4: 'player 4',
-    }));
-    startGame(true);
-    history.push('/game');
-  }, []);
+  //  useEffect(() => {
+  //    localStorage.setItem('players', JSON.stringify({
+  //      player1: 'nikita',
+  //      player2: 'ne nikita',
+  //      player3: 'player 3',
+  //      player4: 'player 4',
+  //    }));
+  //    startGame(true);
+  //    history.push('/game');
+  //  }, []);
 
   const onSubmit = ({ players }) => {
     setNumber(parseInt(players, 10));
